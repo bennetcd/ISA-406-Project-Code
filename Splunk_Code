@@ -3,13 +3,16 @@
 ### search indexes
 
 #For C: Drive: 
-host=FSBSPLUNK2 Name="C:" | head 1 | chart eval(sum(TotalSpaceKB) / 1048576) as Total_Space eval(sum(FreeSpaceKB) / 1048576) as Free_Space | eval Used_Space = Total_Space - Free_Space | fields Free_Space Used_Space | transpose
+host=FSBSPLUNK2 Name="C:" | head 1 | chart eval(sum(TotalSpaceKB) / 1048576) as Total_Space eval(sum(FreeSpaceKB) / 1048576) 
+as Free_Space | eval Used_Space = Total_Space - Free_Space | fields Free_Space Used_Space | transpose
 
 #For V: Partition: 
-host=FSBSPLUNK2 Name="V:" | head 1 | chart eval(sum(TotalSpaceKB) / 1048576) as Total_Space eval(sum(FreeSpaceKB) / 1048576) as Free_Space | eval Used_Space = Total_Space - Free_Space | fields Free_Space Used_Space | transpose
+host=FSBSPLUNK2 Name="V:" | head 1 | chart eval(sum(TotalSpaceKB) / 1048576) as Total_Space eval(sum(FreeSpaceKB) / 1048576) 
+as Free_Space | eval Used_Space = Total_Space - Free_Space | fields Free_Space Used_Space | transpose
 
 #Show Both Partitions Together and full space stats:
-host=FSBSPLUNK2 FileSystem="NTFS" | head 2 | stats sum(eval(TotalSpaceKB/1048576)) as TotalSpace sum(eval(FreeSpaceKB/1048576)) as FreeSpace sum(eval((TotalSpaceKB-FreeSpaceKB)/1048576)) as UsedSpace by Name
+host=FSBSPLUNK2 FileSystem="NTFS" | head 2 | stats sum(eval(TotalSpaceKB/1048576)) as TotalSpace sum(eval(FreeSpaceKB/1048576)) 
+as FreeSpace sum(eval((TotalSpaceKB-FreeSpaceKB)/1048576)) as UsedSpace by Name
 
 
 #This is only available in the full version of splunk
@@ -36,7 +39,43 @@ coldPath   = $SPLUNK_DB\historydb\colddb
 thawedPath = $SPLUNK_DB\historydb\thaweddb
 tstatsHomePath = volume:_splunk_summaries\historydb\datamodel_summary
 maxDataSize = 10                                                        ##use this to set max amount of data an index can use
-frozenTimePeriodInSecs = 604800                                        ##this specifies how much time will pass before the indexed data is deleted
+frozenTimePeriodInSecs = 604800                                        ##this specifies how much time will pass before the 
+                                                                          indexed data is deleted
+
+##CLI commands for configuring splunk free 
+
+##change the current directory to the Splunk bin directory so scripts from the bin can be run
+cd <splunk_folder_in_program_files>\bin\
+
+.\splunk <----- must be before each splunk command
+
+.\splunk add forward-server <host>:<port>
+
+##CLI for Splunk UF
+
+##same reason as before, to run splunk scripts
+cd <splunk_universal_forwarder_in_program_files>\bin
+
+##command to list forwarders for splunk UF
+.\splunk list forward-server
+
+##run the restart command so the splunk can apply the configurations
+##this should also be done after changing any .conf files
+.\splunk restart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
