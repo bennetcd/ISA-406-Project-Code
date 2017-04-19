@@ -1,0 +1,43 @@
+#Splunk Code to search and display basic pie chart with used and remaining space shown
+
+### search indexes
+
+#For C: Drive: 
+host=FSBSPLUNK2 Name="C:" | head 1 | chart eval(sum(TotalSpaceKB) / 1048576) as Total_Space eval(sum(FreeSpaceKB) / 1048576) as Free_Space | eval Used_Space = Total_Space - Free_Space | fields Free_Space Used_Space | transpose
+
+#For V: Partition: 
+host=FSBSPLUNK2 Name="V:" | head 1 | chart eval(sum(TotalSpaceKB) / 1048576) as Total_Space eval(sum(FreeSpaceKB) / 1048576) as Free_Space | eval Used_Space = Total_Space - Free_Space | fields Free_Space Used_Space | transpose
+
+#Show Both Partitions Together and full space stats:
+host=FSBSPLUNK2 FileSystem="NTFS" | head 2 | stats sum(eval(TotalSpaceKB/1048576)) as TotalSpace sum(eval(FreeSpaceKB/1048576)) as FreeSpace sum(eval((TotalSpaceKB-FreeSpaceKB)/1048576)) as UsedSpace by Name
+
+
+#This is only available in the full version of splunk
+Send Test email to "email-to-receive-alert"
+index="main" FileSystem="NTFS" | head 2 | sendemail to="email-to-receive-alert" format="html" server=smtp.gmail.com:587 use_tls=1
+-- Once saved as an alert, a menu will appear with additional alert options.
+-- Set "Trigger Alert When" to custom and in the text box enter "search FreeSpaceKB < 10485760"
+-- Make sure to include search or you will get an error.
+-- The number at the end is 10 GBs represented as KBs, this can be adjusted.
+-- At the bottom there is also an add actions drop down where an email action can be added
+-- just enter the email to receive the alert, select other information to be sent with the email, then save
+
+
+## C:\Program Files\Splunk\etc\system\local <-- use the local directory to override specific configurations from the default
+## inputs.conf
+##this isn't a complete inputs.conf example for how they work
+################################################################################
+# index definitions
+################################################################################
+
+[history]
+homePath   = $SPLUNK_DB\historydb\db                                   ##editing the paths will change where the data is stored
+coldPath   = $SPLUNK_DB\historydb\colddb                               
+thawedPath = $SPLUNK_DB\historydb\thaweddb
+tstatsHomePath = volume:_splunk_summaries\historydb\datamodel_summary
+maxDataSize = 10                                                        ##use this to set max amount of data an index can use
+frozenTimePeriodInSecs = 604800                                        ##this specifies how much time will pass before the indexed data is deleted
+
+
+
+
